@@ -1,0 +1,78 @@
+// import { createContext, useState, useEffect } from "react";
+// import jwtDecode from "jwt-decode";
+
+// export const AuthContext = createContext();
+
+// export const AuthProvider = ({ children }) => {
+//   const [user, setUser] = useState(null);
+
+//   // Load user from token on startup
+//   useEffect(() => {
+//     const token = localStorage.getItem("token");
+//     if (token) {
+//       try {
+//         const decoded = jwtDecode(token);
+//         setUser({ id: decoded.id });
+//       } catch (e) {
+//         localStorage.removeItem("token");
+//       }
+//     }
+//   }, []);
+
+//   const login = (token) => {
+//     localStorage.setItem("token", token);
+//     const decoded = jwtDecode(token);
+//     setUser({ id: decoded.id });
+//   };
+
+//   const logout = () => {
+//     localStorage.removeItem("token");
+//     setUser(null);
+//   };
+
+//   return (
+//     <AuthContext.Provider value={{ user, login, logout }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
+
+import { createContext, useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
+
+export const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  const user = localStorage.getItem("user");
+
+  if (token && user) {
+    setUser(JSON.parse(user));
+  }
+}, []);
+
+
+
+  const login = (token, userData) => {
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(userData));
+
+  setUser(userData);
+};
+
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
