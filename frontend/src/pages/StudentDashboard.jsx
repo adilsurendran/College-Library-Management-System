@@ -3,11 +3,14 @@ import { Container, Row, Col, Card, Button, Navbar, Nav, Badge } from 'react-boo
 import { LinkContainer } from 'react-router-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { allstats } from '../services/studentService';
 
 const StudentDashboard = () => {
 //   const [student, setStudent] = useState(null);
 
 const { user } = useContext(AuthContext);
+// console.log(user.id);
+
 
   const [stats, setStats] = useState({
     booksIssued: 0,
@@ -16,24 +19,48 @@ const { user } = useContext(AuthContext);
   });
   const navigate = useNavigate();
 
+  // useEffect(() => {
+
+  //   const stats = async (req,res)=>{
+  //     try{
+  //     const res = await allstats(user.id)
+  //     console.log(res);
+      
+  //     }
+  //     catch(e){
+  //       console.log(e);
+        
+  //     }
+  //   }
+  //   stats();
+    
+  //   const mockStats = {
+  //     // booksIssued: 3,
+  //     // pendingRequests: 1,
+  //     // booksRead: 12
+  //   };
+    
+  //   // setStudent(mockStudent);
+  //   setStats(mockStats);
+  // }, []);
+
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    // const mockStudent = {
-    //   name: "John Doe",
-    //   email: "john@student.com",
-    //   department: "Computer Science",
-    //   regDate: "2024-01-15"
-    // };
-    
-    const mockStats = {
-      booksIssued: 3,
-      pendingRequests: 1,
-      booksRead: 12
-    };
-    
-    // setStudent(mockStudent);
-    setStats(mockStats);
-  }, []);
+  if (!user || !user.id) return;
+
+  const loadStats = async () => {
+    try {
+      const res = await allstats(user.id); // CALL API
+      console.log("Stats response:", res.data);
+
+      setStats(res.data.stats); // SET STATS STATE
+    } catch (e) {
+      console.log("Stats load error:", e);
+    }
+  };
+
+  loadStats();
+}, [user]);
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -161,7 +188,7 @@ const { user } = useContext(AuthContext);
         </Row>
 
         {/* Recent Activity */}
-        <Row className="mt-4">
+        {/* <Row className="mt-4">
           <Col>
             <Card>
               <Card.Header>
@@ -197,7 +224,7 @@ const { user } = useContext(AuthContext);
               </Card.Body>
             </Card>
           </Col>
-        </Row>
+        </Row> */}
       </Container>
     </>
   );

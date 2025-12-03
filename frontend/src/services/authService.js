@@ -9,9 +9,14 @@ export const registerUser = async (formData) => {
   return res.data;
 };
 
-export const loginUser = async (data) => {
-  const res = await api.post("/login", data);
-  console.log(res);
+// export const loginUser = async (data) => {
+//   const res = await api.post("/login", data);
+//   console.log(res);
   
+//   return res.data;
+// };
+
+export const loginUser = async (data) => {
+  const res = await api.post("/login", data, { withCredentials: true });
   return res.data;
 };

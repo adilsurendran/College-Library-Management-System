@@ -157,7 +157,7 @@ useEffect(()=>{
                       <th>Email</th>
                       <th>Department</th>
                       <th>Registration Date</th>
-                      <th>Books Issued</th>
+                      <th>Reg Date</th>
                       {/* <th>Total Fine</th> */}
                       {/* <th>Status</th> */}
                       {/* <th>Actions</th> */}
@@ -175,7 +175,9 @@ useEffect(()=>{
                         {/* <td>{student.registrationDate}</td> */}<td>{new Date(student.regDate).toLocaleDateString()}</td>
 
                         <td>
-                          <Badge bg="info">{student.booksIssued || 0}</Badge>
+                          {student?.regDate ? new Date(student.regDate).toISOString().split("T")[0] : ""}
+
+
                         </td>
                         {/* <td>
                           <Badge bg={getFineVariant(student.totalFine)}>

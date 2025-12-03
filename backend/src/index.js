@@ -5,6 +5,9 @@ import router from "./routes/authRoutes.js";
 import cors from "cors";
 import bookrouter from "./routes/bookRoutes.js";
 import studentRouter from "./routes/studentRoutes.js";
+import requestRouter from "./routes/requestRoutes.js";
+import adminrouter from "./routes/adminRoutes.js";
+import cookieParser from "cookie-parser";
 
 
 dotenv.config();
@@ -24,8 +27,12 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(cookieParser());
+
 
 
 app.use("/api", router);
 app.use("/api/books", bookrouter);
 app.use("/api/student",studentRouter)
+app.use("/api/request",requestRouter)
+app.use("/api/admin",adminrouter)

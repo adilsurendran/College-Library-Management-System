@@ -1,58 +1,94 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Navbar, Nav, ButtonGroup, Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+import { AuthContext } from '../context/AuthContext';
+import { Studenthistory } from '../services/studentService';
 
 const HistoryPage = () => {
   const [history, setHistory] = useState([]);
   const [filter, setFilter] = useState('all'); // all, issued, returned, pending
 
-  useEffect(() => {
-    // Mock data - replace with actual API call
-    const mockHistory = [
-      {
-        id: 1,
-        bookTitle: "Data Structures and Algorithms",
-        author: "Robert Sedgewick",
-        issueDate: "2024-01-10",
-        dueDate: "2024-01-24",
-        returnDate: null,
-        status: "issued",
-        fine: 0
-      },
-      {
-        id: 2,
-        bookTitle: "Introduction to AI",
-        author: "Stuart Russell",
-        issueDate: "2024-01-12",
-        dueDate: "2024-01-26",
-        returnDate: null,
-        status: "pending",
-        fine: 0
-      },
-      {
-        id: 3,
-        bookTitle: "Database Management Systems",
-        author: "Raghu Ramakrishnan",
-        issueDate: "2023-12-20",
-        dueDate: "2024-01-03",
-        returnDate: "2024-01-08",
-        status: "returned",
-        fine: 50
-      },
-      {
-        id: 4,
-        bookTitle: "Computer Networks",
-        author: "Andrew S. Tanenbaum",
-        issueDate: "2023-12-01",
-        dueDate: "2023-12-15",
-        returnDate: "2023-12-14",
-        status: "returned",
-        fine: 0
-      }
-    ];
+    const { user } = useContext(AuthContext);
 
-    setHistory(mockHistory);
-  }, []);
+//   useEffect(() => {
+//     // Mock data - replace with actual API call
+//     const mockHistory = [
+//       {
+//         id: 1,
+//         bookTitle: "Data Structures and Algorithms",
+//         author: "Robert Sedgewick",
+//         issueDate: "2024-01-10",
+//         dueDate: "2024-01-24",
+//         returnDate: null,
+//         status: "issued",
+//         fine: 0
+//       },
+//       {
+//         id: 2,
+//         bookTitle: "Introduction to AI",
+//         author: "Stuart Russell",
+//         issueDate: "2024-01-12",
+//         dueDate: "2024-01-26",
+//         returnDate: null,
+//         status: "pending",
+//         fine: 0
+//       },
+//       {
+//         id: 3,
+//         bookTitle: "Database Management Systems",
+//         author: "Raghu Ramakrishnan",
+//         issueDate: "2023-12-20",
+//         dueDate: "2024-01-03",
+//         returnDate: "2024-01-08",
+//         status: "returned",
+//         fine: 50
+//       },
+//       {
+//         id: 4,
+//         bookTitle: "Computer Networks",
+//         author: "Andrew S. Tanenbaum",
+//         issueDate: "2023-12-01",
+//         dueDate: "2023-12-15",
+//         returnDate: "2023-12-14",
+//         status: "returned",
+//         fine: 0
+//       }
+//     ];
+
+//     setHistory(mockHistory);
+
+// const loadhistory = async()=>{
+//   try{
+//     const res = await Studenthistory(user.id)
+//     console.log(res);
+    
+//   }
+//   catch(e){
+//     console.log(e);
+    
+//   }
+// }
+
+// loadhistory();
+//   }, []);
+
+useEffect(() => {
+  if (!user || !user.id) return; // Wait until user is loaded
+
+  const loadHistory = async () => {
+    try {
+      const res = await Studenthistory(user.id);
+      console.log("History:", res.data);
+
+      setHistory(res.data); // Set backend data
+    } catch (e) {
+      console.error("Failed to load history:", e);
+    }
+  };
+
+  loadHistory();
+}, [user]);
+
 
   const filteredHistory = history.filter(item => {
     if (filter === 'all') return true;
@@ -163,7 +199,7 @@ const HistoryPage = () => {
                         <th>Due Date</th>
                         <th>Return Date</th>
                         <th>Status</th>
-                        <th>Fine</th>
+                        {/* <th>Fine</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -171,24 +207,30 @@ const HistoryPage = () => {
                         <tr key={record.id}>
                           <td>
                             <div>
-                              <strong>{record.bookTitle}</strong>
+                              <strong>{record.book_id?.title || "📕 Book Deleted"}</strong>
                               <br />
-                              <small className="text-muted">by {record.author}</small>
+                              <small className="text-muted">by {record.book_id?.author || "Unknown"}</small>
                             </div>
                           </td>
-                          <td>{record.issueDate}</td>
-                          <td>{record.dueDate}</td>
-                          <td>{record.returnDate || '-'}</td>
+                          <td>{new Date(record.issueDate).toLocaleDateString()}</td>
+                          <td>{new Date(record.returnDate).toLocaleDateString()}</td>
+                          {/* <td>{record.actual_returnDate || '-'}</td> */}
+                          <td>
+  {record.actual_returnDate 
+    ? new Date(record.actual_returnDate).toLocaleDateString()
+    : "-"
+  }
+</td>
                           <td>
                             <Badge bg={getStatusVariant(record.status)}>
                               {record.status.toUpperCase()}
                             </Badge>
                           </td>
-                          <td>
+                          {/* <td>
                             <Badge bg={getFineVariant(record.fine)}>
-                              ₹{record.fine}
+                              ₹{record.student_id.fine}
                             </Badge>
-                          </td>
+                          </td> */}
                         </tr>
                       ))}
                     </tbody>
@@ -226,7 +268,7 @@ const HistoryPage = () => {
               <Card.Body>
                 <h5>Total Fine</h5>
                 <h3 className="text-danger">
-                  ₹{history.reduce((sum, record) => sum + record.fine, 0)}
+                  ₹{history?.[0]?.student_id?.fine ?? 0}
                 </h3>
               </Card.Body>
             </Card>

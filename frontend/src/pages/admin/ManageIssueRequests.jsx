@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Button, ButtonGroup, Navbar, Nav } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+import { fetchAllRequest, updateReq } from '../../services/requestservice';
 
 const ManageIssueRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -8,43 +9,18 @@ const ManageIssueRequests = () => {
 
   useEffect(() => {
     // Mock data - replace with API call
-    const mockRequests = [
-      {
-        id: 1,
-        studentName: 'John Doe',
-        studentId: 'S001',
-        bookTitle: 'Data Structures and Algorithms',
-        requestDate: '2024-01-15',
-        issueDate: '2024-01-16',
-        dueDate: '2024-01-30',
-        status: 'pending',
-        fine: 0
-      },
-      {
-        id: 2,
-        studentName: 'Jane Smith',
-        studentId: 'S002',
-        bookTitle: 'Introduction to AI',
-        requestDate: '2024-01-14',
-        issueDate: '2024-01-15',
-        dueDate: '2024-01-29',
-        status: 'approved',
-        fine: 0
-      },
-      {
-        id: 3,
-        studentName: 'Mike Johnson',
-        studentId: 'S003',
-        bookTitle: 'Database Systems',
-        requestDate: '2024-01-13',
-        issueDate: null,
-        dueDate: null,
-        status: 'rejected',
-        fine: 0,
-        rejectionReason: 'Book not available'
+    const fetchRequest = async()=>{
+      try{
+      const res = await fetchAllRequest();
+      console.log("all requestttttttttttttttt",res);
+      setRequests(res.data)
       }
-    ];
-    setRequests(mockRequests);
+      catch(e){
+        console.log(e);
+        
+      }
+    }
+    fetchRequest();
   }, []);
 
   const filteredRequests = requests.filter(request => {
@@ -52,18 +28,43 @@ const ManageIssueRequests = () => {
     return request.status === filter;
   });
 
-  const handleStatusUpdate = (requestId, newStatus, reason = '') => {
-    setRequests(prev => prev.map(request => 
-      request.id === requestId 
-        ? { 
-            ...request, 
-            status: newStatus,
-            ...(newStatus === 'approved' && { issueDate: new Date().toISOString().split('T')[0] }),
-            ...(reason && { rejectionReason: reason })
-          }
-        : request
-    ));
-  };
+  // const handleStatusUpdate = async (requestId, newStatus) => {
+
+  //   console.log(requestId,newStatus);
+  //   try{
+  //     const res = await updateReq(requestId,newStatus);
+  //     console.log(res);
+      
+      
+  //   }
+  //   catch(e){
+  //     console.log(e);
+  //   }
+    
+  //   // setRequests(prev => prev.map(request => 
+  //   //   request.id === requestId 
+  //   //     ? { 
+  //   //         ...request, 
+  //   //         status: newStatus,
+  //   //         ...(newStatus === 'approved' && { issueDate: new Date().toISOString().split('T')[0] }),
+  //   //         ...(reason && { rejectionReason: reason })
+  //   //       }
+  //   //     : request
+  //   // ));
+  // };
+const handleStatusUpdate = async (requestId, newStatus) => {
+  try {
+    const res = await updateReq(requestId, newStatus);
+    console.log("Updated:", res.data);
+
+    // ✅ Re-fetch updated list
+    const refreshed = await fetchAllRequest();
+    setRequests(refreshed.data);
+
+  } catch (e) {
+    console.log(e);
+  }
+};
 
   const getStatusVariant = (status) => {
     switch (status) {
@@ -162,31 +163,30 @@ const ManageIssueRequests = () => {
                       <th>Book</th>
                       <th>Request Date</th>
                       <th>Due Date</th>
+                      <th>Fine</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredRequests.map(request => (
-                      <tr key={request.id}>
+                      <tr key={request._id}>
                         <td>
-                          <strong>{request.studentName}</strong>
+                          <strong>{request.student_id.name}</strong>
                           <br />
-                          <small className="text-muted">ID: {request.studentId}</small>
+                          <small className="text-muted">Department: {request.student_id.department}</small>
                         </td>
-                        <td>{request.bookTitle}</td>
-                        <td>{request.requestDate}</td>
-                        <td>{request.dueDate || '-'}</td>
+                        <td><td>{request.book_id?.title || "📕 Book Deleted"}</td>
+                          <br />
+                          <small className="text-muted">By: <td>{request.book_id?.author || "Unknown"}</td></small>
+                        </td>
+                        <td>{new Date(request.issueDate).toLocaleDateString()}</td>
+                        <td>{new Date(request.returnDate).toLocaleDateString() || '-'}</td>
+                        <td>{request.student_id.fine}</td>
                         <td>
                           <Badge bg={getStatusVariant(request.status)}>
                             {request.status.toUpperCase()}
                           </Badge>
-                          {request.rejectionReason && (
-                            <>
-                            <br />
-                            <small className="text-muted">{request.rejectionReason}</small>
-                            </>
-                          )}
                         </td>
                         <td>
                           {request.status === 'pending' && (
@@ -194,7 +194,7 @@ const ManageIssueRequests = () => {
                               <Button
                                 variant="outline-success"
                                 size="sm"
-                                onClick={() => handleStatusUpdate(request.id, 'approved')}
+                                onClick={() => handleStatusUpdate(request._id, 'approved')}
                               >
                                 Approve
                               </Button>
@@ -202,10 +202,7 @@ const ManageIssueRequests = () => {
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => {
-                                  const reason = prompt('Enter rejection reason:');
-                                  if (reason) {
-                                    handleStatusUpdate(request.id, 'rejected', reason);
-                                  }
+                                    handleStatusUpdate(request._id, 'rejected');
                                 }}
                               >
                                 Reject

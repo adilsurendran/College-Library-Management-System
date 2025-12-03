@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Navbar, Nav, Table, Badge, Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import { fetchallstats } from '../../services/adminService';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -15,22 +17,37 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     // Mock data - replace with actual API calls
-    const mockStats = {
-      totalBooks: 156,
-      totalStudents: 89,
-      pendingRequests: 12,
-      issuedBooks: 45
-    };
+    const allstats = async (req,res)=>{
+      try{
+      const res = await fetchallstats();
+      setStats(res.data.stats)
+      }
+      catch(e){
+        console.log(e);
+        
+      }
 
-    const mockActivity = [
-      { id: 1, student: 'John Doe', book: 'Data Structures', action: 'Requested', time: '2 hours ago' },
-      { id: 2, student: 'Jane Smith', book: 'AI Fundamentals', action: 'Returned', time: '4 hours ago' },
-      { id: 3, student: 'Mike Johnson', book: 'Database Systems', action: 'Issued', time: '1 day ago' },
-      { id: 4, student: 'Sarah Wilson', book: 'Computer Networks', action: 'Requested', time: '1 day ago' }
-    ];
+    
+      
+    }
 
-    setStats(mockStats);
-    setRecentActivity(mockActivity);
+      allstats();
+    // const mockStats = {
+      // totalBooks: 156,
+      // totalStudents: 89,
+      // pendingRequests: 12,
+      // issuedBooks: 45
+    // };
+
+    // const mockActivity = [
+    //   { id: 1, student: 'John Doe', book: 'Data Structures', action: 'Requested', time: '2 hours ago' },
+    //   { id: 2, student: 'Jane Smith', book: 'AI Fundamentals', action: 'Returned', time: '4 hours ago' },
+    //   { id: 3, student: 'Mike Johnson', book: 'Database Systems', action: 'Issued', time: '1 day ago' },
+    //   { id: 4, student: 'Sarah Wilson', book: 'Computer Networks', action: 'Requested', time: '1 day ago' }
+    // ];
+
+    // setStats(mockStats);
+    // setRecentActivity(mockActivity);
   }, []);
 
   const handleLogout = () => {
@@ -192,7 +209,7 @@ const AdminDashboard = () => {
         </Row>
 
         {/* Recent Activity */}
-        <Row>
+        {/* <Row>
           <Col>
             <Card>
               <Card.Header>
@@ -226,7 +243,7 @@ const AdminDashboard = () => {
               </Card.Body>
             </Card>
           </Col>
-        </Row>
+        </Row> */}
       </Container>
     </>
   );

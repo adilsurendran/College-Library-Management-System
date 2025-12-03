@@ -8,6 +8,7 @@ const studentSchema = new mongoose.Schema({
     department:{type:String, required:true},
     regDate:{type:Date, required:true},
     photo:{type:String},
+    fine: { type: Number, default: 0 },
     loginID:{type:mongoose.Schema.Types.ObjectId,
         ref:"Login"
     }
