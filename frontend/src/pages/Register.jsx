@@ -40,7 +40,7 @@ const Register = () => {
       await registerUser(formData);
 
       setMsg("Registration successful! Redirecting...");
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/"), 1500);
     } catch (e) {
       setMsg(e.response?.data?.message || "Registration failed");
     } finally {
@@ -50,7 +50,7 @@ const Register = () => {
 
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px" }}>
-      <h2>Register Student</h2>
+      <h2>Register as Student</h2>
 
       {msg && (
         <p
