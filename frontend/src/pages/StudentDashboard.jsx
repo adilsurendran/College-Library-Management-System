@@ -94,6 +94,9 @@ const { user } = useContext(AuthContext);
               <LinkContainer to="/history">
                 <Nav.Link>My History</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/request-book">
+                              <Nav.Link>Request Book</Nav.Link>
+                            </LinkContainer>
             </Nav>
             <Nav>
               <Navbar.Text className="me-3">

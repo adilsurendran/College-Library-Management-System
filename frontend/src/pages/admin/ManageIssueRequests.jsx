@@ -12,6 +12,8 @@ const ManageIssueRequests = () => {
     const fetchRequest = async()=>{
       try{
       const res = await fetchAllRequest();
+      console.log("fetchAllRequestttttttttttttttttttttttttttt",res);
+      
       console.log("all requestttttttttttttttt",res);
       setRequests(res.data)
       }
@@ -52,12 +54,61 @@ const ManageIssueRequests = () => {
   //   //     : request
   //   // ));
   // };
+// const handleStatusUpdate = async (requestId, newStatus) => {
+//   try {
+//     const res = await updateReq(requestId, newStatus);
+//     console.log("Updated:", res.data);
+
+//     // ✅ Re-fetch updated list
+//     const refreshed = await fetchAllRequest();
+//     setRequests(refreshed.data);
+
+//   } catch (e) {
+//     console.log(e);
+//   }
+// };
+
+// const handleStatusUpdate = async (requestId, newStatus) => {
+//   try {
+//     let payload = { newStatus };
+
+//     // ✅ If approving, calculate due date (+7 days)
+//     if (newStatus === "approved") {
+//       const today = new Date();
+//       const dueDate = new Date(today);
+//       dueDate.setDate(today.getDate() + 7);
+
+//       payload.returnDate = dueDate; // send to backend
+//     }
+
+//     const res = await updateReq(requestId, payload);
+//     console.log("Updated:", res.data);
+
+//     // refresh list
+//     const refreshed = await fetchAllRequest();
+//     setRequests(refreshed.data);
+
+//   } catch (e) {
+//     console.log(e);
+//   }
+// };
+
 const handleStatusUpdate = async (requestId, newStatus) => {
   try {
-    const res = await updateReq(requestId, newStatus);
+    let payload = { newStatus };
+
+    // ✅ When approving initial issue OR renew accept → extend due date
+    if (newStatus === "approved" || newStatus === "renewaccepted") {
+      const today = new Date();
+      const dueDate = new Date(today);
+      dueDate.setDate(today.getDate() + 7);
+
+      payload.returnDate = dueDate;
+    }
+
+    const res = await updateReq(requestId, payload);
     console.log("Updated:", res.data);
 
-    // ✅ Re-fetch updated list
     const refreshed = await fetchAllRequest();
     setRequests(refreshed.data);
 
@@ -66,14 +117,19 @@ const handleStatusUpdate = async (requestId, newStatus) => {
   }
 };
 
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case 'pending': return 'warning';
-      case 'approved': return 'success';
-      case 'rejected': return 'danger';
-      default: return 'secondary';
-    }
-  };
+
+const getStatusVariant = (status) => {
+  switch (status) {
+    case 'pending': return 'warning';
+    case 'approved': return 'success';
+    case 'renewrequested': return 'info';
+    case 'renewaccepted': return 'success';
+    case 'renewrejected': return 'danger';
+    case 'rejected': return 'danger';
+    default: return 'secondary';
+  }
+};
+
 
   return (
     <>
@@ -142,6 +198,12 @@ const handleStatusUpdate = async (requestId, newStatus) => {
                   >
                     Rejected
                   </Button>
+                  <Button
+                    variant={filter === 'renewrequested' ? 'warning' : 'outline-warning'}
+                    onClick={() => setFilter('renewrequested')}
+                  >
+                    Renew
+                  </Button>
                 </ButtonGroup>
               </Card.Body>
             </Card>
@@ -181,14 +243,18 @@ const handleStatusUpdate = async (requestId, newStatus) => {
                           <small className="text-muted">By: <td>{request.book_id?.author || "Unknown"}</td></small>
                         </td>
                         <td>{new Date(request.issueDate).toLocaleDateString()}</td>
-                        <td>{new Date(request.returnDate).toLocaleDateString() || '-'}</td>
+<td>
+  {request.returnDate
+    ? new Date(request.returnDate).toLocaleDateString()
+    : '-'}
+</td>
                         <td>{request.student_id.fine}</td>
                         <td>
                           <Badge bg={getStatusVariant(request.status)}>
                             {request.status.toUpperCase()}
                           </Badge>
                         </td>
-                        <td>
+                        {/* <td>
                           {request.status === 'pending' && (
                             <div className="btn-group">
                               <Button
@@ -212,7 +278,55 @@ const handleStatusUpdate = async (requestId, newStatus) => {
                           {request.status !== 'pending' && (
                             <small className="text-muted">No actions available</small>
                           )}
-                        </td>
+                        </td> */}
+                        <td>
+  {/* INITIAL ISSUE REQUEST */}
+  {request.status === 'pending' && (
+    <div className="btn-group">
+      <Button
+        variant="outline-success"
+        size="sm"
+        onClick={() => handleStatusUpdate(request._id, 'approved')}
+      >
+        Approve
+      </Button>
+      <Button
+        variant="outline-danger"
+        size="sm"
+        onClick={() => handleStatusUpdate(request._id, 'rejected')}
+      >
+        Reject
+      </Button>
+    </div>
+  )}
+
+  {/* RENEW REQUEST */}
+  {request.status === 'renewrequested' && (
+    <div className="btn-group">
+      <Button
+        variant="outline-success"
+        size="sm"
+        onClick={() => handleStatusUpdate(request._id, 'renewaccepted')}
+      >
+        Accept Renew
+      </Button>
+      <Button
+        variant="outline-danger"
+        size="sm"
+        onClick={() => handleStatusUpdate(request._id, 'renewrejected')}
+      >
+        Reject Renew
+      </Button>
+    </div>
+  )}
+
+  {/* NO ACTION */}
+  {request.status !== 'pending' &&
+   request.status !== 'renewrequested' && (
+    <small className="text-muted">No actions available</small>
+  )}
+</td>
+
                       </tr>
                     ))}
                   </tbody>

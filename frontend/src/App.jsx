@@ -19,6 +19,8 @@ import ManageBooks from './pages/admin/ManageBooks';
 import ManageIssueRequests from './pages/admin/ManageIssueRequests';
 import TrackIssuedBooks from './pages/admin/TrackIssuedBooks';
 import ViewStudents from './pages/admin/ViewStudents';
+import RequestNewBook from './pages/RequestNewBook';
+import ManageBookPurchaseRequests from './pages/admin/ManageBookPurchaseRequests';
 
 function App() {
   return (
@@ -61,6 +63,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/request-book"
+          element={
+            <ProtectedRoute>
+              <RequestNewBook />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin Protected Routes */}
         <Route
@@ -100,6 +110,14 @@ function App() {
           element={
             <AdminRoute>
               <ViewStudents />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/newbook"
+          element={
+            <AdminRoute>
+              < ManageBookPurchaseRequests/>
             </AdminRoute>
           }
         />

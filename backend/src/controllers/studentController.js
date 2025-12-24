@@ -45,11 +45,50 @@ const Student = await STUDENT.find().sort({ createdAt: -1 });
     
 // }
 
+// export const issueRequest = async (req, res) => {
+//   const { selectedBook, issueDate, returnDate, student_id, status } = req.body;
+
+//   try {
+//     // 1. Check book availability
+//     const book = await BOOK.findById(selectedBook);
+//     if (!book) {
+//       return res.status(404).json({ message: "Book not found" });
+//     }
+
+//     if (book.availableCopies <= 0) {
+//       return res.status(400).json({ message: "Book is not available right now!" });
+//     }
+
+//     // 2. Create request
+//     const newReq = await REQUEST.create({
+//       student_id,
+//       book_id: selectedBook,
+//       issueDate,
+//       returnDate,
+//       status: status || "pending",
+//       actual_returnDate: null      // correct
+//     });
+
+
+//     // 3. Send success response
+//     return res.status(201).json({
+//       message: "Issue request submitted successfully",
+//       request: newReq
+//     });
+
+//   } catch (e) {
+//     console.error(e);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const issueRequest = async (req, res) => {
-  const { selectedBook, issueDate, returnDate, student_id, status } = req.body;
+  const { selectedBook, issueDate, student_id } = req.body;
+  console.log(student_id);
+  
 
   try {
-    // 1. Check book availability
+    // 1️⃣ Check book
     const book = await BOOK.findById(selectedBook);
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
@@ -59,18 +98,14 @@ export const issueRequest = async (req, res) => {
       return res.status(400).json({ message: "Book is not available right now!" });
     }
 
-    // 2. Create request
+    // 2️⃣ Create request WITHOUT return date
     const newReq = await REQUEST.create({
       student_id,
       book_id: selectedBook,
       issueDate,
-      returnDate,
-      status: status || "pending",
-      actual_returnDate: null      // correct
+      status: "pending"
     });
 
-
-    // 3. Send success response
     return res.status(201).json({
       message: "Issue request submitted successfully",
       request: newReq
@@ -81,6 +116,7 @@ export const issueRequest = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // export const history = async(req,res)=>{
 //     const {id} = req.params
@@ -149,5 +185,36 @@ export const AllStats = async (req, res) => {
   } catch (e) {
     console.log(e);
     return res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+
+export const renewRequest = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const request = await REQUEST.findById(id);
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    // Only issued books can be renewed
+    if (request.status !== "approved") {
+      return res.status(400).json({
+        message: "Renewal allowed only for issued books"
+      });
+    }
+
+    request.status = "renewrequested";
+    await request.save();
+
+    res.json({
+      message: "Renew request sent to admin",
+      request
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

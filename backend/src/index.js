@@ -8,6 +8,7 @@ import studentRouter from "./routes/studentRoutes.js";
 import requestRouter from "./routes/requestRoutes.js";
 import adminrouter from "./routes/adminRoutes.js";
 import cookieParser from "cookie-parser";
+import NewBookRouter from "./routes/bookPurchaseRequestRoutes.js";
 
 
 dotenv.config();
@@ -36,3 +37,4 @@ app.use("/api/books", bookrouter);
 app.use("/api/student",studentRouter)
 app.use("/api/request",requestRouter)
 app.use("/api/admin",adminrouter)
+app.use("/api/book-request",NewBookRouter)

@@ -2,75 +2,13 @@ import { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Table, Badge, Navbar, Nav, ButtonGroup, Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { AuthContext } from '../context/AuthContext';
-import { Studenthistory } from '../services/studentService';
+import { sendRenewRequest, Studenthistory } from '../services/studentService';
 
 const HistoryPage = () => {
   const [history, setHistory] = useState([]);
   const [filter, setFilter] = useState('all'); // all, issued, returned, pending
 
     const { user } = useContext(AuthContext);
-
-//   useEffect(() => {
-//     // Mock data - replace with actual API call
-//     const mockHistory = [
-//       {
-//         id: 1,
-//         bookTitle: "Data Structures and Algorithms",
-//         author: "Robert Sedgewick",
-//         issueDate: "2024-01-10",
-//         dueDate: "2024-01-24",
-//         returnDate: null,
-//         status: "issued",
-//         fine: 0
-//       },
-//       {
-//         id: 2,
-//         bookTitle: "Introduction to AI",
-//         author: "Stuart Russell",
-//         issueDate: "2024-01-12",
-//         dueDate: "2024-01-26",
-//         returnDate: null,
-//         status: "pending",
-//         fine: 0
-//       },
-//       {
-//         id: 3,
-//         bookTitle: "Database Management Systems",
-//         author: "Raghu Ramakrishnan",
-//         issueDate: "2023-12-20",
-//         dueDate: "2024-01-03",
-//         returnDate: "2024-01-08",
-//         status: "returned",
-//         fine: 50
-//       },
-//       {
-//         id: 4,
-//         bookTitle: "Computer Networks",
-//         author: "Andrew S. Tanenbaum",
-//         issueDate: "2023-12-01",
-//         dueDate: "2023-12-15",
-//         returnDate: "2023-12-14",
-//         status: "returned",
-//         fine: 0
-//       }
-//     ];
-
-//     setHistory(mockHistory);
-
-// const loadhistory = async()=>{
-//   try{
-//     const res = await Studenthistory(user.id)
-//     console.log(res);
-    
-//   }
-//   catch(e){
-//     console.log(e);
-    
-//   }
-// }
-
-// loadhistory();
-//   }, []);
 
 useEffect(() => {
   if (!user || !user.id) return; // Wait until user is loaded
@@ -108,6 +46,45 @@ useEffect(() => {
     return fine > 0 ? 'danger' : 'success';
   };
 
+  const handleRenew = async (requestId) => {
+  try {
+    await sendRenewRequest(requestId);
+    alert("Renew request sent to admin");
+
+    // refresh history
+    const res = await Studenthistory(user.id);
+    setHistory(res.data);
+
+  } catch (e) {
+    console.error(e);
+    alert("Failed to send renew request");
+  }
+};
+
+const isPastDue = (dueDate) => {
+  if (!dueDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  return today > due; // ❌ past due
+};
+
+const isDueToday = (dueDate) => {
+  if (!dueDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  return today.getTime() === due.getTime(); // 🔴 today
+};
+
   return (
     <>
       {/* Navigation Bar */}
@@ -129,6 +106,9 @@ useEffect(() => {
               <LinkContainer to="/history">
                 <Nav.Link>My History</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/request-book">
+                              <Nav.Link>Request Book</Nav.Link>
+                            </LinkContainer>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -200,11 +180,17 @@ useEffect(() => {
                         <th>Return Date</th>
                         <th>Status</th>
                         {/* <th>Fine</th> */}
+                        <th>Renew</th>
+
                       </tr>
                     </thead>
                     <tbody>
                       {filteredHistory.map(record => (
-                        <tr key={record.id}>
+                        <tr
+  key={record._id}
+  className={isDueToday(record.returnDate) ? "table-danger" : ""}
+>
+
                           <td>
                             <div>
                               <strong>{record.book_id?.title || "📕 Book Deleted"}</strong>
@@ -213,7 +199,12 @@ useEffect(() => {
                             </div>
                           </td>
                           <td>{new Date(record.issueDate).toLocaleDateString()}</td>
-                          <td>{new Date(record.returnDate).toLocaleDateString()}</td>
+                          <td>
+  {record.returnDate
+    ? new Date(record.returnDate).toLocaleDateString()
+    : "-"}
+</td>
+
                           {/* <td>{record.actual_returnDate || '-'}</td> */}
                           <td>
   {record.actual_returnDate 
@@ -231,6 +222,59 @@ useEffect(() => {
                               ₹{record.student_id.fine}
                             </Badge>
                           </td> */}
+                          {/* <td>
+  {record.status === "approved" && (
+    <Button
+      size="sm"
+      variant="outline-primary"
+      onClick={() => handleRenew(record._id)}
+    >
+      🔄 Renew
+    </Button>
+  )}
+
+  {record.status === "renewrequested" && (
+    <Badge bg="info">Requested</Badge>
+  )}
+
+  {record.status !== "approved" &&
+   record.status !== "renewrequested" && (
+    <span className="text-muted">-</span>
+  )}
+</td> */}
+
+<td>
+  {/* ISSUED / APPROVED → RENEW */}
+  {record.status === "approved" && (
+    <>
+      {isPastDue(record.returnDate) ? (
+        <small className="text-danger fw-semibold">
+          Renew expired
+        </small>
+      ) : (
+        <Button
+          size="sm"
+          variant="outline-primary"
+          onClick={() => handleRenew(record._id)}
+        >
+          🔄 Renew
+        </Button>
+      )}
+    </>
+  )}
+
+  {/* RENEW REQUEST ALREADY SENT */}
+  {record.status === "renewrequested" && (
+    <Badge bg="info">Requested</Badge>
+  )}
+
+  {/* OTHER STATUSES */}
+  {record.status !== "approved" &&
+   record.status !== "renewrequested" && (
+    <span className="text-muted">-</span>
+  )}
+</td>
+
                         </tr>
                       ))}
                     </tbody>

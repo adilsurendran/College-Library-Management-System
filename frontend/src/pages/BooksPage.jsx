@@ -136,6 +136,9 @@ useEffect(() => {
               <LinkContainer to="/history">
                 <Nav.Link>My History</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/request-book">
+                              <Nav.Link>Request Book</Nav.Link>
+                            </LinkContainer>
             </Nav>
           </Navbar.Collapse>
         </Container>

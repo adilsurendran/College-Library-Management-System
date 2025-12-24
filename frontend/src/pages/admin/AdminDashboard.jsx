@@ -89,6 +89,9 @@ const AdminDashboard = () => {
               <LinkContainer to="/admin/students">
                 <Nav.Link>View Students</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/admin/newbook">
+                <Nav.Link>View Book Request</Nav.Link>
+              </LinkContainer>
             </Nav>
             <Nav>
               <Navbar.Text className="me-3">
