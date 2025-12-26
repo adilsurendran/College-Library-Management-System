@@ -92,8 +92,11 @@ const ManageBookPurchaseRequests = () => {
               <LinkContainer to="/admin/track-books">
                 <Nav.Link>Track Books</Nav.Link>
               </LinkContainer>
-              <LinkContainer to="/admin/book-requests">
-                <Nav.Link>Book Requests</Nav.Link>
+              <LinkContainer to="/admin/students">
+                <Nav.Link>View Students</Nav.Link>
+              </LinkContainer>
+              <LinkContainer to="/admin/newbook">
+                <Nav.Link>View Book Request</Nav.Link>
               </LinkContainer>
             </Nav>
           </Navbar.Collapse>

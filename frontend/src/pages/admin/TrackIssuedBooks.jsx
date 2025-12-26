@@ -191,6 +191,9 @@ const handleReturnSubmit = async () => {
               <LinkContainer to="/admin/students">
                 <Nav.Link>View Students</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/admin/newbook">
+                <Nav.Link>View Book Request</Nav.Link>
+              </LinkContainer>
             </Nav>
           </Navbar.Collapse>
         </Container>
